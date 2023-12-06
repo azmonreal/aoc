@@ -2,3 +2,6 @@
 resolver = "2"
 members = ["day-*"]
 
+[profile.dev]
+opt-level= 3
+
