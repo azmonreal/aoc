@@ -14,8 +14,6 @@ fn main() {
 }
 
 fn solve(input: &String) -> (u64, u64) {
-    let mut prod = 1;
-
     let mut lines = input.lines();
 
     let time: Vec<_> = lines
@@ -34,52 +32,27 @@ fn solve(input: &String) -> (u64, u64) {
         .map(|x| x.parse::<u64>().unwrap())
         .collect();
 
-    for (t, d) in time.iter().zip(distance.iter()) {
-        let mut min = 0;
-        let mut max = 0;
+    let prod = time.iter().zip(distance.iter()).fold(1, |a, b| {
+        let (&t, &d) = b.clone();
 
-        for i in 1..*t {
-            if i * (t - i) > *d {
-                min = i;
-                break;
-            }
-        }
-        for i in (1..*t).rev() {
-            if i * (t - i) > *d {
-                max = i;
-                break;
-            }
-        }
+        let min = (1..t).find(|x| x * (t - x) > d).unwrap();
+        let max = (1..t).rev().find(|x| x * (t - x) > d).unwrap();
 
-        let count = max - min + 1;
-
-        prod *= count;
-    }
+        a * (max - min + 1)
+    });
 
     let t: u64 = time
         .into_iter()
         .reduce(|a, b| a * u64::pow(10, b.ilog10() + 1) + b)
         .unwrap();
+
     let d: u64 = distance
         .into_iter()
         .reduce(|a, b| a * u64::pow(10, b.ilog10() + 1) + b)
         .unwrap();
 
-    let mut min = 0;
-    let mut max = 0;
-
-    for i in 1..t {
-        if i * (t - i) > d {
-            min = i;
-            break;
-        }
-    }
-    for i in (1..t).rev() {
-        if i * (t - i) > d {
-            max = i;
-            break;
-        }
-    }
+    let min = (1..t).find(|x| x * (t - x) > d).unwrap();
+    let max = (1..t).rev().find(|x| x * (t - x) > d).unwrap();
 
     let long = max - min + 1;
 
