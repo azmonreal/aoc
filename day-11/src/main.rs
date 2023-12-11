@@ -13,7 +13,7 @@ fn main() {
     println!("Part 2: {}", part2);
 }
 
-fn solve(contents: &String) -> (i32, i32) {
+fn solve(contents: &String) -> (i32, u64) {
     let original = contents
         .lines()
         .map(|l| l.chars().collect::<Vec<_>>())
@@ -94,5 +94,37 @@ fn solve(contents: &String) -> (i32, i32) {
         .map(|row| row.iter().sum::<usize>())
         .sum::<usize>() as i32;
 
-    (sum, 0)
+    let row_size = row_size.iter().map(|&x| if x == 1 { x} else {1000000}).collect::<Vec<_>>();
+    let col_size = col_size.iter().map(|&x| if x == 1 { x} else {1000000}).collect::<Vec<_>>();
+
+    let distances = galaxies
+        .iter()
+        .enumerate()
+        .map(|(i, galaxy)| {
+            galaxies[i + 1..]
+                .iter()
+                .map(|other| {
+                    let smaller = (usize::min(galaxy.0, other.0), usize::min(galaxy.1, other.1));
+                    let larger = (usize::max(galaxy.0, other.0), usize::max(galaxy.1, other.1));
+
+                    (row_size[smaller.0..larger.0]
+                        .iter()
+                        .sum::<usize>()
+                        + col_size[smaller.1..larger.1]
+                            .iter()
+                            .sum::<usize>()) as u64
+
+                    // (galaxy.0 - other.0).abs() + (galaxy.1 - other.1).abs()
+                })
+                .collect::<Vec<_>>()
+        })
+        .collect::<Vec<_>>();
+
+    let large_sum = distances
+        .iter()
+        .map(|row| row.iter().sum::<u64>())
+        .sum::<u64>();
+
+
+    (sum, large_sum)
 }
