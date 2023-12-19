@@ -1,4 +1,8 @@
-use std::{arch::x86_64::__cpuid, env, fs};
+use std::{
+    collections::{HashMap, VecDeque},
+    env, fs,
+    ops::Range,
+};
 
 fn main() {
     let file_path = env::args().nth(1).expect("Please provide a file path");
@@ -7,6 +11,7 @@ fn main() {
     let contents = fs::read_to_string(file_path).expect("Something went wrong reading the file");
 
     println!("Part 1: {}", part1(&contents));
+    println!("Part 2: {}", part2(&contents));
 }
 
 fn part1(contents: &String) -> u32 {
@@ -100,4 +105,102 @@ fn part1(contents: &String) -> u32 {
     }
 
     sum
+}
+
+fn part2(contents: &String) -> u64 {
+    let workflows = contents
+        .split_once("\n\n")
+        .map(|(w, p)| {
+            w.lines()
+                .map(|l| {
+                    let (name, rules) = l.split_at(l.find("{").unwrap());
+                    (
+                        name,
+                        rules[1..rules.len() - 1].split(",").collect::<Vec<_>>(),
+                    )
+                })
+                .collect::<HashMap<_, _>>()
+        })
+        .unwrap();
+
+    // println!("{:?}", workflows);
+
+    let mut unchecked: VecDeque<_> = VecDeque::new();
+    unchecked.push_back((
+        "in",
+        vec![
+            Range {
+                start: 1,
+                end: 4001
+            };
+            4
+        ],
+    ));
+
+    let mut valid: Vec<_> = Vec::new();
+
+    while let Some(current) = unchecked.pop_front() {
+        // println!("Current: {:?}", current);
+        let mut ranges = current.1.clone();
+        for rule in workflows.get(current.0).unwrap() {
+            // println!("Rule: {}", rule);
+            let mut n_ranges = ranges.clone();
+            let dest = match rule.split_once(":") {
+                Some((cmp, dest)) => {
+                    let c_cat = match cmp.chars().nth(0).unwrap() {
+                        'x' => 0,
+                        'm' => 1,
+                        'a' => 2,
+                        's' => 3,
+                        _ => panic!(),
+                    };
+
+                    let symb = match cmp.chars().nth(1).unwrap() {
+                        '<' => 0,
+                        '>' => 1,
+                        _ => panic!(),
+                    };
+
+                    let val = cmp[2..].parse::<u32>().unwrap();
+
+                    match symb {
+                        0 => {
+                            n_ranges[c_cat].end = ranges[c_cat].end.min(val);
+                            ranges[c_cat].start = ranges[c_cat].start.max(val);
+                        }
+                        1 => {
+                            n_ranges[c_cat].start = ranges[c_cat].start.max(val + 1);
+                            ranges[c_cat].end = ranges[c_cat].end.min(val + 1);
+                        }
+                        _ => panic!(),
+                    }
+
+                    dest
+                }
+                None => rule,
+            };
+            // println!("End: {:?}", n_ranges);
+
+            match dest {
+                "A" => {
+                    valid.push(n_ranges.clone());
+                }
+                "R" => {}
+                _ => unchecked.push_back((dest, n_ranges.clone())),
+            }
+        }
+    }
+
+    // println!("{:?}", valid);
+
+    let combs = valid
+        .iter()
+        .map(|ranges| {
+            ranges
+                .iter()
+                .fold(1, |acc: u64, r| acc * (r.end - r.start) as u64)
+        })
+        .sum::<u64>();
+
+    combs
 }
