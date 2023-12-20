@@ -75,5 +75,9 @@ name = "day-18"
 version = "0.1.0"
 
 [[package]]
+name = "day-20"
+version = "0.1.0"
+
+[[package]]
 name = "dqay-19"
 version = "0.1.0"
