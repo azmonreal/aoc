@@ -1,4 +1,7 @@
-use std::{collections::HashSet, env, fs};
+use std::{
+    collections::{HashSet, VecDeque},
+    env, fs,
+};
 
 fn main() {
     let file_path = env::args().nth(1).expect("Please provide a file path");
@@ -6,10 +9,13 @@ fn main() {
 
     let contents = fs::read_to_string(file_path).expect("Something went wrong reading the file");
 
-    println!("Part 1: {}", part1(&contents));
+    let solution = solve(&contents);
+
+    println!("Part 1: {}", solution.0);
+    println!("Part 2: {}", solution.1);
 }
 
-fn part1(contents: &String) -> usize {
+fn solve(contents: &String) -> (usize, usize) {
     let mut bricks = contents
         .lines()
         .map(|line| {
@@ -46,7 +52,6 @@ fn part1(contents: &String) -> usize {
     ); */
 
     collapse(&mut bricks);
-
     // println!("{:?}", bricks);
 
     let supports = supports(&bricks);
@@ -62,7 +67,31 @@ fn part1(contents: &String) -> usize {
         .collect::<HashSet<_>>();
     // println!("{:?}", needed);
 
-    bricks.len() - needed.len()
+    let sum = bricks
+        .iter()
+        .enumerate()
+        .map(|(i, _)| {
+            let mut removed = vec![i];
+
+            let mut next: VecDeque<_> = supports[i].iter().collect();
+
+            while let Some(sup) = next.pop_front() {
+                if removed.contains(sup) {
+                    continue;
+                }
+                if is_supported_by[*sup].iter().all(|s| removed.contains(s)) {
+                    removed.push(*sup);
+
+                    next.append(&mut supports[*sup].iter().collect());
+                }
+            }
+
+            // println!("{}: {:?}", i, removed);
+            removed.len() -1
+        })
+        .sum::<usize>();
+
+    (bricks.len() - needed.len(), sum)
 }
 
 fn collapse(bricks: &mut Vec<(Vec<usize>, Vec<usize>)>) {
