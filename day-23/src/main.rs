@@ -131,11 +131,12 @@ fn part2(contents: &String) -> i32 {
     //         .join("\n")
     // );
 
-    explore_graph(&graph, &start, &end)
-        .iter()
-        .max()
-        .unwrap()
-        .clone()
+    r_dfs(&maze, &graph, &start, &end, &mut HashSet::new())
+    // explore_graph(&graph, &start, &end)
+    //     .iter()
+    //     .max()
+    //     .unwrap()
+    //     .clone()
 }
 
 fn find_neighbors(
@@ -206,4 +207,33 @@ fn explore_graph(
     }
 
     exits
+}
+
+fn r_dfs(
+    maze: &Vec<Vec<char>>,
+    graph: &HashMap<(i32, i32), Vec<((i32, i32), i32)>>,
+    start: &(i32, i32),
+    end: &(i32, i32),
+    visited: &mut HashSet<(i32, i32)>,
+) -> i32 {
+    if start == end {
+        return 0;
+    }
+
+    visited.insert(*start);
+
+    let mut max = std::i32::MIN;
+
+    visited.insert(*start);
+
+    graph[start].iter().for_each(|(next, dist)| {
+        if visited.contains(next) {
+            return;
+        }
+        max = max.max(dist + r_dfs(maze, graph, next, end, visited));
+    });
+
+    visited.remove(start);
+
+    max
 }

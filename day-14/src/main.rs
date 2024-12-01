@@ -8,7 +8,7 @@ fn main() {
     let contents = fs::read_to_string(file_path).expect("Something went wrong reading the file");
 
     println!("Part 1: {}", part1(&contents));
-    println!("Part 2: {}", part2(&contents));
+    println!("Part 2: {}", part2_2(&contents));
 }
 
 fn part1(contents: &String) -> usize {
@@ -127,7 +127,6 @@ fn part2(contents: &String) -> usize {
 
     final_load
 }
-
 fn tilt(
     rocks: &mut Vec<(usize, usize)>,
     cubes: &Vec<(usize, usize)>,
@@ -181,6 +180,54 @@ fn tilt(
         }
         _ => {}
     }
+}
+
+fn part2_2(contents: &String) -> usize {
+    let mut platform = contents
+        .lines()
+        .map(|line| line.chars().collect::<Vec<_>>())
+        .collect::<Vec<_>>();
+
+    let v = platform;
+
+    let len = v[0].len();
+    let mut iters= v.into_iter().rev().map(|n| n.into_iter()).collect::<Vec<_>>();
+
+    platform = (0..len)
+        .map(|_| {
+             iters
+                .iter_mut()
+                .map(|n| n.next().unwrap())
+                .collect::<Vec<_>>()
+        })
+        .collect::<Vec<_>>();
+
+    println!(
+        "{}",
+        platform
+            .iter()
+            .map(|s| s.iter().collect::<String>())
+            .collect::<Vec<_>>()
+            .join("\n")
+    );
+
+    let temp = platform
+        .iter()
+        .map(|row| {
+            row.split(|&c| c == '#')
+                .map(|s| {
+                    let mut temp = s.to_vec();
+                    temp.sort();
+                    temp
+                })
+                .collect::<Vec<_>>()
+                .join(&'#')
+        })
+        .collect::<Vec<_>>();
+
+    println!("{}", temp.iter().map(|s| s.iter().collect::<String>()).collect::<Vec<_>>().join("\n"));
+
+    0
 }
 
 fn print_platform(size: (usize, usize), rocks: &Vec<(usize, usize)>, cubes: &Vec<(usize, usize)>) {

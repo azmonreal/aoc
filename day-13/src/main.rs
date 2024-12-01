@@ -8,7 +8,8 @@ fn main() {
     let contents = fs::read_to_string(file_path).expect("Something went wrong reading the file");
 
     println!("Part 1: {}", part1(&contents));
-    println!("Part 2: {}", part2(&contents));
+    println!("Part 2: {}", part2_1(&contents));
+    // println!("Part 2: {}", part2(&contents));
 }
 
 fn part1(contents: &String) -> usize {
@@ -255,4 +256,8 @@ fn part2(contents: &String) -> usize {
     });
 
     sum
+}
+
+fn part2_1(contents: &String) -> usize {
+    0
 }

@@ -13,7 +13,7 @@ fn main() {
 }
 
 fn part1(contents: &String) -> usize {
-    let mut adjecency_list =
+    let adjecency_list =
         contents
             .lines()
             .fold(std::collections::HashMap::new(), |mut map, line| {
@@ -31,97 +31,122 @@ fn part1(contents: &String) -> usize {
                 // map
             });
 
-    let mut edges: HashMap<(&str, &str), usize> =
-        adjecency_list
-            .iter()
-            .fold(HashMap::new(), |mut map, (k, v)| {
-                v.iter().for_each(|child| {
-                    map.entry((k.min(child), k.max(child))).or_insert(0);
-                });
-                map
-            });
+    // println!("{:?}", adjecency_list);
 
-    // println!("{:?}{}", edges, edges.len());
+    let names = adjecency_list.keys().map(|k| *k).collect::<Vec<_>>();
 
-    let mut c = 0;
+    // println!("{:?}", names);
 
-    for node in adjecency_list.keys() {
-        // if c > 0 {
-        //     continue;
-        // }
-        let mut unvisited = VecDeque::new();
+    let mut adjecency_list: Vec<Vec<usize>> = adjecency_list
+        .iter()
+        .map(|(k, v)| {
+            v.iter()
+                .map(|child| names.iter().position(|x| x == child).unwrap())
+                .collect::<Vec<_>>()
+        })
+        .collect::<Vec<_>>();
 
-        unvisited.push_back((*node, vec![]));
+    // println!("{:?}", adjecency_list);
 
-        let mut visited = vec![];
+    let mut edges: Vec<Vec<usize>> = vec![vec![0; names.len()]; names.len()];
 
-        while let Some((next, mut path)) = unvisited.pop_front() {
-            // println!("next: {}", next);
-            if !visited.contains(&next) {
-                visited.push(next);
-            }
-
-            path.push(next);
-
-            for neighbor in adjecency_list.get(next).unwrap() {
-                if !visited.contains(neighbor) {
-                    unvisited.push_back((neighbor, path.clone()));
-                    visited.push(neighbor);
-
-                    for edge in path.windows(2) {
-                        edges
-                            .entry((edge[0].min(edge[1]), edge[0].max(edge[1])))
-                            .and_modify(|e| *e += 1);
-                    }
-                    // edges
-                    //     .entry((next.min(neighbor), next.max(neighbor)))
-                    //     .and_modify(|e| *e += 1);
-                }
-            }
-        }
-        // c += 1;
+    for node in 0..names.len() {
+        // count_edges(node, &adjecency_list, &mut edges);
+        count_edges_recursive(node, &adjecency_list, &mut edges, &mut vec![], &vec![]);
     }
 
-    let mut sorted = edges.iter().collect::<Vec<_>>();
+    // println!("{:?}", edges);
+
+    let mut sorted = edges
+        .iter()
+        .enumerate()
+        .map(|(i, row)| {
+            row.iter()
+                .enumerate()
+                .map(|(j, e)| ((i, j), e))
+                .collect::<Vec<_>>()
+        })
+        .flatten()
+        .collect::<Vec<_>>();
+
     sorted.sort_by(|(_, a), (_, b)| b.cmp(a));
 
     let cuts = &sorted[..3]
         .iter()
-        .map(|((a, b), _)| (a, b))
+        .map(|((a, b), _)| (*a, *b))
         .collect::<Vec<_>>();
 
-    // println!("{:?}", cuts);
+    println!(
+        "{:?}",
+        cuts.iter()
+            .map(|(a, b)| (names[*a], names[*b]))
+            .collect::<Vec<_>>()
+    );
 
     cuts.iter().for_each(|cut| {
         adjecency_list
-            .entry(cut.0)
-            .and_modify(|e| e.retain(|x| x != cut.1));
+            .get_mut(cut.0)
+            .unwrap()
+            .retain(|x| *x != cut.1);
         adjecency_list
-            .entry(cut.1)
-            .and_modify(|e| e.retain(|x| x != cut.0));
+            .get_mut(cut.1)
+            .unwrap()
+            .retain(|x| *x != cut.0);
     });
-
-    let mut unvisited = VecDeque::new();
-    unvisited.push_back(*adjecency_list.keys().next().unwrap());
-    
+    let mut unvisited: VecDeque<(usize, Vec<usize>)> = VecDeque::new();
+    unvisited.push_back((0, vec![]));
 
     let mut visited = vec![];
 
-    while let Some(next) = unvisited.pop_front() {
+    while let Some((next, mut path)) = unvisited.pop_front() {
         if !visited.contains(&next) {
             visited.push(next);
         }
 
-        for neighbor in adjecency_list.get(next).unwrap() {
+        path.push(next);
+
+        for neighbor in adjecency_list[next].iter() {
             if !visited.contains(neighbor) {
-                unvisited.push_back(*neighbor);
-                visited.push(neighbor);
+                unvisited.push_back((*neighbor, path.clone()));
+                visited.push(*neighbor);
             }
         }
     }
 
     let count = adjecency_list.len() - visited.len();
 
-
     count * visited.len()
+}
+
+fn count_edges(start: usize, adjecency_list: &Vec<Vec<usize>>, edges: &mut Vec<Vec<usize>>) {
+    let mut unvisited: VecDeque<(usize, Vec<usize>)> = VecDeque::new();
+    unvisited.push_back((start, vec![]));
+
+    let mut visited = vec![];
+
+    while let Some((next, mut path)) = unvisited.pop_front() {
+        if !visited.contains(&next) {
+            visited.push(next);
+        }
+
+        path.push(next);
+
+        for neighbor in adjecency_list[next].iter() {
+            if !visited.contains(neighbor) {
+                unvisited.push_back((*neighbor, path.clone()));
+                visited.push(*neighbor);
+
+                for edge in path.windows(2) {
+                    edges[edge[0].min(edge[1])][edge[0].max(edge[1])] += 1;
+                }
+            }
+        }
+    }
+}
+
+fn count_edges_recursive(
+    start: usize,
+    adjecency_list: &Vec<Vec<usize>>,
+    edges: &mut Vec<Vec<usize>>,
+) {
 }

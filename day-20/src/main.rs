@@ -252,25 +252,5 @@ fn part2(contents: &String) -> u64 {
         }
     }
 
-    // println!("{}", count);
-    // println!("{:?}", conj.get("qb").unwrap());
-
-    // println!("Freq: {:?}", freq);
-
-    let lcm = freq
-        .values()
-        .fold(freq.values().next().unwrap().clone(), |acc, &v| {
-            let mut a = u64::max(acc as u64, v as u64);
-            let mut b = u64::min(acc as u64, v as u64);
-
-            while b > 0 {
-                let temp = b;
-                b = a % b;
-                a = temp;
-            }
-
-            (acc as u64 * v as u64) / a
-        });
-
-    lcm
+     freq.values().map(|&v| v).reduce(|acc, f| { let var_name = acc * f; var_name }).unwrap()
 }
