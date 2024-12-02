@@ -2,7 +2,7 @@ mod puzzles;
 
 use puzzles::*;
 
-use std::{env, fs};
+use std::{env, fs, time};
 
 fn main() {
     let args = env::args().collect::<Vec<String>>();
@@ -24,12 +24,14 @@ fn main() {
                 Err(_) => panic!("Error loading data"),
             }
 
+            let start = time::Instant::now();
             let results = match day {
                 1 => d1::solve(data.unwrap()),
                 _ => panic!("Day not implemented"),
             };
+            let elapsed = start.elapsed();
 
-            println!("Part 1: {}, Part 2: {}", results.0, results.1);
+            println!("Part 1: {}, Part 2: {} ({}ms)", results.0, results.1, elapsed.as_millis());
         }
     }
 }
