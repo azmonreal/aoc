@@ -27,6 +27,7 @@ fn main() {
             let start = time::Instant::now();
             let results = match day {
                 1 => d1::solve(data.unwrap()),
+                2 => d2::solve(data.unwrap()),
                 _ => panic!("Day not implemented"),
             };
             let elapsed = start.elapsed();
