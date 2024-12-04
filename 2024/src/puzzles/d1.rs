@@ -1,5 +1,5 @@
 #[test]
-fn test_p1() {
+fn test() {
     let (p1, p2) = solve(String::from(
         "3   4
 4   3
