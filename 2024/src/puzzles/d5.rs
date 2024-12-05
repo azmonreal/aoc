@@ -45,54 +45,67 @@ pub fn solve(data: String) -> (String, String) {
 
     rules.sort();
 
-    let updates: Vec<Vec<i32>> = input
+    let mut updates: Vec<Vec<i32>> = input
         .1
         .lines()
         .map(|l| l.split(",").map(|e| e.parse().unwrap()).collect())
         .collect();
 
-    let correct: Vec<&Vec<i32>> = updates
-        .iter()
-        .filter(|u| {
-            let len = u.len();
-            rules.iter().all(|r| {
-                u.iter().position(|e| *e == r[0]).unwrap_or(0)
-                    <= u.iter().position(|e| *e == r[1]).unwrap_or(len)
+    let middles: (i32, i32) = updates.iter_mut().fold((0, 0), |acc, u| {
+        let len = u.len();
+        let incorrect = rules
+            .iter()
+            .filter(|r| {
+                let pos0 = u.iter().position(|e| *e == r[0]).unwrap_or(0);
+                let pos1 = u.iter().position(|e| *e == r[1]).unwrap_or(len);
+                if pos0 > pos1 {
+                    let a = u[pos0];
+                    u.remove(pos0);
+                    u.insert(pos1, a);
+                    return true;
+                }
+                false
             })
-        })
-        .collect();
+            .count()
+            == 0;
+        let mid = u[len / 2];
+        (
+            acc.0 + mid * incorrect as i32,
+            acc.1 + mid * !incorrect as i32,
+        )
+    });
 
-    let incorrect: Vec<Vec<i32>> = updates
-        .iter()
-        .filter_map(|u| {
-            if !correct.contains(&u) {
-                let len = u.len();
-                let mut uc = u.clone();
-                rules.iter().for_each(|r| {
-                    let pos0 = uc.iter().position(|e| *e == r[0]).unwrap_or(0);
-                    let pos1 = uc.iter().position(|e| *e == r[1]).unwrap_or(len);
-                    if pos0 > pos1 {
-                        let a = uc[pos0];
-                        uc.remove(pos0);
-                        uc.insert(pos1, a);
-                    }
-                });
-                return Some(uc);
-            }
-            None
-        })
-        .collect();
+    // let correct: Vec<&Vec<i32>> = updates
+    //     .iter()
+    //     .filter(|u| {
+    //         let len = u.len();
+    //         rules.iter().all(|r| {
+    //             u.iter().position(|e| *e == r[0]).unwrap_or(0)
+    //                 <= u.iter().position(|e| *e == r[1]).unwrap_or(len)
+    //         })
+    //     })
+    //     .collect();
+    //
+    // let incorrect: Vec<Vec<i32>> = updates
+    //     .iter()
+    //     .filter_map(|u| {
+    //         if !correct.contains(&u) {
+    //             let len = u.len();
+    //             let mut uc = u.clone();
+    //             rules.iter().for_each(|r| {
+    //                 let pos0 = uc.iter().position(|e| *e == r[0]).unwrap_or(0);
+    //                 let pos1 = uc.iter().position(|e| *e == r[1]).unwrap_or(len);
+    //                 if pos0 > pos1 {
+    //                     let a = uc[pos0];
+    //                     uc.remove(pos0);
+    //                     uc.insert(pos1, a);
+    //                 }
+    //             });
+    //             return Some(uc);
+    //         }
+    //         None
+    //     })
+    //     .collect();
 
-    (
-        correct
-            .iter()
-            .map(|c| c[c.len() / 2])
-            .sum::<i32>()
-            .to_string(),
-        incorrect
-            .iter()
-            .map(|c| c[c.len() / 2])
-            .sum::<i32>()
-            .to_string(),
-    )
+    (middles.0.to_string(), middles.1.to_string())
 }
