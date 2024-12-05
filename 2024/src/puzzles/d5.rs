@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 #[test]
 fn test() {
     let (p1, p2) = solve(String::from(
@@ -37,13 +39,30 @@ fn test() {
 pub fn solve(data: String) -> (String, String) {
     let input = data.split_once("\n\n").unwrap();
 
-    let mut rules: Vec<Vec<i32>> = input
-        .0
-        .lines()
-        .map(|l| l.split("|").map(|e| e.parse().unwrap()).collect())
-        .collect();
+    let rules: HashMap<i32, Vec<i32>> = input.0.lines().fold(HashMap::new(), |mut acc, r| {
+        let (lh, rh) = r
+            .split_once("|")
+            .map(|(lh, rh)| (lh.parse::<i32>().unwrap(), rh.parse::<i32>().unwrap()))
+            .unwrap();
+        match acc.get_mut(&lh) {
+            Some(v) => {
+                v.push(rh);
+            }
+            None => {
+                acc.insert(lh, vec![rh]);
+            }
+        }
 
-    rules.sort();
+        acc
+    });
+
+    // let mut rules: Vec<Vec<i32>> = input
+    //     .0
+    //     .lines()
+    //     .map(|l| l.split("|").map(|e| e.parse().unwrap()).collect())
+    //     .collect();
+    //
+    // rules.sort();
 
     let mut updates: Vec<Vec<i32>> = input
         .1
@@ -56,15 +75,22 @@ pub fn solve(data: String) -> (String, String) {
         let incorrect = rules
             .iter()
             .filter(|r| {
-                let pos0 = u.iter().position(|e| *e == r[0]).unwrap_or(0);
-                let pos1 = u.iter().position(|e| *e == r[1]).unwrap_or(len);
-                if pos0 > pos1 {
-                    let a = u[pos0];
-                    u.remove(pos0);
-                    u.insert(pos1, a);
-                    return true;
-                }
-                false
+                let mut pos0 = u.iter().position(|&e| e == *r.0).unwrap_or(0);
+
+                r.1.iter()
+                    .filter(|&&rh| {
+                        let pos1 = u.iter().position(|&e| e == rh).unwrap_or(len);
+                        if pos0 > pos1 {
+                            let a = u[pos0];
+                            u.remove(pos0);
+                            u.insert(pos1, a);
+                            pos0 = pos1;
+                            return true;
+                        }
+                        false
+                    })
+                    .count()
+                    != 0
             })
             .count()
             == 0;
@@ -74,6 +100,30 @@ pub fn solve(data: String) -> (String, String) {
             acc.1 + mid * !incorrect as i32,
         )
     });
+
+    // let middles: (i32, i32) = updates.iter_mut().fold((0, 0), |acc, u| {
+    //     let len = u.len();
+    //     let incorrect = rules
+    //         .iter()
+    //         .filter(|r| {
+    //             let pos0 = u.iter().position(|e| *e == r[0]).unwrap_or(0);
+    //             let pos1 = u.iter().position(|e| *e == r[1]).unwrap_or(len);
+    //             if pos0 > pos1 {
+    //                 let a = u[pos0];
+    //                 u.remove(pos0);
+    //                 u.insert(pos1, a);
+    //                 return true;
+    //             }
+    //             false
+    //         })
+    //         .count()
+    //         == 0;
+    //     let mid = u[len / 2];
+    //     (
+    //         acc.0 + mid * incorrect as i32,
+    //         acc.1 + mid * !incorrect as i32,
+    //     )
+    // });
 
     // let correct: Vec<&Vec<i32>> = updates
     //     .iter()
