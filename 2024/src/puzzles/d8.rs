@@ -73,16 +73,23 @@ pub fn solve(data: String) -> (String, String) {
                 pos_vec[i + 1..].iter().for_each(|p2| {
                     let d = (p.0 - p2.0, p.1 - p2.1);
 
-                    let mut next = (p.0, p.1);
-                    while in_bounds(next, &map) {
-                        acc.insert(next);
-                        next = (next.0 + d.0, next.1 + d.1);
-                    }
-                    let mut prev = (p2.0, p2.1);
-                    while in_bounds(prev, &map) {
-                        acc.insert(prev);
-                        prev = (next.0 - d.0, next.1 - d.1);
-                    }
+                    // let mut next = (p.0, p.1);
+                    // while in_bounds(next, &map) {
+                    //     acc.insert(next);
+                    //     next = (next.0 + d.0, next.1 + d.1);
+                    // }
+                    // let mut prev = (p2.0, p2.1);
+                    // while in_bounds(prev, &map) {
+                    //     acc.insert(prev);
+                    //     prev = (next.0 - d.0, next.1 - d.1);
+                    // }
+
+                    let next = successors(Some(**p), |(x, y)| Some((x + d.0, y + d.1))).take_while(|p| in_bounds(*p, &map)).collect::<HashSet<_>>();
+                    acc.extend(next);
+
+                    let prev = successors(Some(**p2), |(x, y)| Some((x - d.0, y - d.1))).take_while(|p| in_bounds(*p, &map)).collect::<HashSet<_>>();
+                    acc.extend(prev);
+
                 })
             });
             acc
