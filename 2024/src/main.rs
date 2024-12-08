@@ -32,6 +32,7 @@ fn main() {
                 4 => d4::solve(data.unwrap()),
                 5 => d5::solve(data.unwrap()),
                 6 => d6::solve(data.unwrap()),
+                7 => d7::solve(data.unwrap()),
                 _ => panic!("Day not implemented"),
             };
             let elapsed = start.elapsed();
