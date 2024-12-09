@@ -59,22 +59,23 @@ pub fn solve(data: String) -> (String, String) {
         .collect::<Vec<_>>();
 
     for i in (0..space_map.len()).rev() {
+        // PERF: position lookup kinda slow
         let pos = space_map.iter().position(|&(id, _, _)| id == i).unwrap();
 
-        let mut file = space_map.remove(pos);
+        let mut file = space_map[pos];
 
-        if let Some(fit) = space_map.iter().position(|&(_, _, free)| free >= file.1) {
+        if let Some(fit) = space_map[..pos]
+            .iter()
+            .position(|&(_, _, free)| free >= file.1)
+        {
             if fit < pos {
                 space_map[pos - 1].2 += file.1 + file.2;
                 file.2 = space_map[fit].2 - file.1;
                 space_map[fit].2 = 0;
 
+                space_map.remove(pos);
                 space_map.insert(fit + 1, file);
-            } else {
-                space_map.insert(pos, file);
             }
-        } else {
-            space_map.insert(pos, file);
         }
     }
     let map_cecksum = space_map
