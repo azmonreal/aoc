@@ -13,28 +13,28 @@ pub fn solve(data: String) -> (String, String) {
         .map(|s| s.parse::<u64>().unwrap())
         .collect::<Vec<u64>>();
 
-    let mut stones = original.clone();
-
-    for _ in 0..25 {
-        let mut i = 0;
-        while i < stones.len() {
-            if stones[i] == 0 {
-                stones[i] = 1;
-            } else {
-                let str = stones[i].to_string();
-                if str.len() % 2 == 0 {
-                    let old = stones.remove(i).to_string();
-                    let (a, b) = old.split_at(old.len() / 2);
-                    stones.insert(i, a.parse::<u64>().unwrap());
-                    stones.insert(i + 1, b.parse::<u64>().unwrap());
-                    i += 1;
-                } else {
-                    stones[i] *= 2024;
-                }
-            }
-            i += 1;
-        }
-    }
+    // let mut stones = original.clone();
+    //
+    // for _ in 0..25 {
+    //     let mut i = 0;
+    //     while i < stones.len() {
+    //         if stones[i] == 0 {
+    //             stones[i] = 1;
+    //         } else {
+    //             let str = stones[i].to_string();
+    //             if str.len() % 2 == 0 {
+    //                 let old = stones.remove(i).to_string();
+    //                 let (a, b) = old.split_at(old.len() / 2);
+    //                 stones.insert(i, a.parse::<u64>().unwrap());
+    //                 stones.insert(i + 1, b.parse::<u64>().unwrap());
+    //                 i += 1;
+    //             } else {
+    //                 stones[i] *= 2024;
+    //             }
+    //         }
+    //         i += 1;
+    //     }
+    // }
 
     let mut cache: HashMap<u64, HashMap<usize, u64>> = HashMap::new();
 
@@ -73,9 +73,13 @@ pub fn solve(data: String) -> (String, String) {
         len
     }
 
-    let len = original
+    let len25 = original
+        .iter()
+        .fold(0, |acc, x| acc + blink(*x, 25, &mut cache, 25));
+
+    let len75 = original
         .iter()
         .fold(0, |acc, x| acc + blink(*x, 75, &mut cache, 75));
 
-    (stones.len().to_string(), len.to_string())
+    (len25.to_string(), len75.to_string())
 }
