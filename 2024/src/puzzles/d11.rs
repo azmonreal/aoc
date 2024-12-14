@@ -68,6 +68,7 @@ pub fn solve(data: String) -> (String, String) {
             }
         }
 
+        // HACK: cache is probably not comprehensive enough
         cache.entry(val).or_default().insert(remaining, len);
 
         len
