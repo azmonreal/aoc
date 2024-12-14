@@ -1,5 +1,3 @@
-use regex::Regex;
-
 #[test]
 fn test() {
     let (p1, p2) = solve(String::from(
@@ -28,26 +26,23 @@ pub fn solve(data: String) -> (String, String) {
         .split("\n\n")
         .map(|machine| {
             let lines = machine.lines().collect::<Vec<_>>();
-            let a = &Regex::new(r"X\+(\d+), Y\+(\d+)")
-                .unwrap()
-                .captures(lines[0])
-                .unwrap();
-            let b = &Regex::new(r"X\+(\d+), Y\+(\d+)")
-                .unwrap()
-                .captures(lines[1])
-                .unwrap();
-            let prize = &Regex::new(r"X=(\d+), Y\=(\d+)")
-                .unwrap()
-                .captures(lines[2])
-                .unwrap();
+            let a = lines[0].split_once(":").unwrap().1.split_once(",").unwrap();
+            let ax = &a.0.trim()[2..];
+            let ay = &a.1.trim()[2..];
+            let b = lines[1].split_once(":").unwrap().1.split_once(",").unwrap();
+            let bx = &b.0.trim()[2..];
+            let by = &b.1.trim()[2..];
+            let prize = lines[2].split_once(":").unwrap().1.split_once(",").unwrap();
+            let px = &prize.0.trim()[2..];
+            let py = &prize.1.trim()[2..];
 
             (
-                a[0].parse::<i64>().unwrap(),
-                a[1].parse::<i64>().unwrap(),
-                b[0].parse::<i64>().unwrap(),
-                b[1].parse::<i64>().unwrap(),
-                prize[0].parse::<i64>().unwrap(),
-                prize[1].parse::<i64>().unwrap(),
+                ax.parse::<i64>().unwrap(),
+                ay.parse::<i64>().unwrap(),
+                bx.parse::<i64>().unwrap(),
+                by.parse::<i64>().unwrap(),
+                px.parse::<i64>().unwrap(),
+                py.parse::<i64>().unwrap(),
             )
         })
         .collect::<Vec<_>>();
