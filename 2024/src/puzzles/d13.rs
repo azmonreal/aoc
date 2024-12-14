@@ -23,18 +23,6 @@ Prize: X=18641, Y=10279",
     assert_eq!(p2, "");
 }
 
-fn gcd(a: usize, b: usize) -> usize {
-    // https://en.wikipedia.org/wiki/Euclidean_algorithm
-    let mut max = a.max(b);
-    let mut min = a.min(b);
-
-    while min != max {
-        let d = max - min;
-        (max, min) = (min.max(d), min.min(d));
-    }
-    min
-}
-
 pub fn solve(data: String) -> (String, String) {
     let machines = data
         .split("\n\n")
@@ -54,34 +42,48 @@ pub fn solve(data: String) -> (String, String) {
                 .unwrap();
 
             (
-                a[1].parse::<usize>().unwrap(),
-                a[2].parse::<usize>().unwrap(),
-                b[1].parse::<usize>().unwrap(),
-                b[2].parse::<usize>().unwrap(),
-                prize[1].parse::<usize>().unwrap(),
-                prize[2].parse::<usize>().unwrap(),
+                a[0].parse::<i64>().unwrap(),
+                a[1].parse::<i64>().unwrap(),
+                b[0].parse::<i64>().unwrap(),
+                b[1].parse::<i64>().unwrap(),
+                prize[0].parse::<i64>().unwrap(),
+                prize[1].parse::<i64>().unwrap(),
             )
         })
         .collect::<Vec<_>>();
 
-    let reachable = machines
-        .iter()
-        .filter(|(ax, ay, bx, by, px, py)| px % gcd(*ax, *bx) == 0 && py % gcd(*ay, *by) == 0)
-        .collect::<Vec<_>>();
+    let solve = |ax: i64, ay: i64, bx: i64, by: i64, px: i64, py: i64| -> Option<(i64, i64)> {
+        let a = (px * by - py * bx) / (ax * by - ay * bx);
+        let b = (px - ax * a) / bx;
 
-    let tokens = reachable
+        if ax * a + bx * b == px && ay * a + by * b == py {
+            return Some((a, b));
+        }
+        None
+    };
+
+    let tokens = machines
         .iter()
         .filter_map(|(ax, ay, bx, by, px, py)| {
-            for i in 1..=100 {
-                for j in 1..=100 {
-                    if ax * i + bx * j == *px && ay * i + by * j == *py {
-                        return Some(i * 3 + j);
-                    }
-                }
+            if let Some((a, b)) = solve(*ax, *ay, *bx, *by, *px, *py) {
+                return Some(a * 3 + b);
             }
             None
         })
-        .sum::<usize>();
+        .sum::<i64>();
 
-    (tokens.to_string(), String::new())
+    let tokensl = machines
+        .iter()
+        .filter_map(|(ax, ay, bx, by, mut px, mut py)| {
+            px += 10000000000000;
+            py += 10000000000000;
+
+            if let Some((a, b)) = solve(*ax, *ay, *bx, *by, px, py) {
+                return Some(a * 3 + b);
+            }
+            None
+        })
+        .sum::<i64>();
+
+    (tokens.to_string(), tokensl.to_string())
 }
